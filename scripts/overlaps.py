@@ -58,11 +58,7 @@ def print_overlaps(source, out=None, encoding=DEFAULT_ENCODING):
                 continue
             print(u'{}\t{}\t{}'.format(source.name, ann_str(a1), ann_str(a2)),
                   file=out)
-    
-    # if duplicate_count != 0:
-    #     print >> sys.stderr, 'removed %d duplicates from %s' % \
-    #         (duplicate_count, os.path.basename(source.name))
-            
+
 
 def main(argv):
     for fn in argv[1:]:
