@@ -13,5 +13,6 @@ Knowtator to standoff format conversion for CRAFT corpus
 
 * Merge gene/protein types: `perl -p -i -e 's/^(\S+\t)(?:PR|EntrezGene)/${1}GGP/' standoff/*.ann`
 * Marge taxonomic types: `perl -p -i -e 's/^(\S+\t)(?:NCBITaxon|taxonomic_rank)/${1}Taxon/' standoff/*.ann`
+* Remove rare non-physical types: `for f in standoff/*.ann; do egrep -v '^T[0-9]+'$'\t''(subspecies|species|phylum|kingdom) ' $f > tmp; mv tmp $f; done`
 * Deduplicate: `for f in standoff/*.ann; do python scripts/remove-duplicates.py $f > tmp; mv tmp $f; done`
 * Resolve overlaps: `for f in standoff/*.ann; do python scripts/resolveoverlaps.py $f > tmp; mv tmp $f; done`

@@ -46,11 +46,11 @@ class Annotation(object):
 
     @property
     def start(self):
-        return min(s[0] for s in self.spans())
+        return min(s[0] for s in self.spans)
 
     @property
     def end(self):
-        return max(s[1] for s in self.spans())
+        return max(s[1] for s in self.spans)
 
     def overlaps(self, other):
         # Note: annotations treated as continuous for comparison
@@ -67,17 +67,15 @@ class Annotation(object):
 
 def pick_removed(t1, t2):
     # prefer to remove shorter, remove later if identical length
-    t1start, t1end = t1.span()
-    t2start, t2end = t2.span()
-    t1len = t1end - t1start
-    t2len = t2end - t2start
+    t1len = t1.end - t1.start
+    t2len = t2.end - t2.start
     if t1len < t2len:
         return t1, t2
     elif t2len < t1len:
         return t2, t1
-    elif t1start < t2start:
+    elif t1.start < t2.start:
         return t1, t2
-    elif t2start < t1start:
+    elif t2.start < t1.start:
         return t2, t1
     elif t1.ln < t2.ln:
         return t1, t2
@@ -143,7 +141,7 @@ def resolve_overlapped(source, out=None, encoding=DEFAULT_ENCODING):
 
     textbounds = [a for a in annotations if a.is_textbound()]
 
-    # Resolve annotations with identical spans
+    # Resolve annotations with identical spans by type
     anns_by_span = defaultdict(list)
     for a in textbounds:
         anns_by_span[tuple(a.spans)].append(a)
@@ -156,21 +154,22 @@ def resolve_overlapped(source, out=None, encoding=DEFAULT_ENCODING):
                     continue
                 resolve_identical_spans(a1, a2)
 
-    #print('matching spans: {}'.format(' --- '.join(unicode(a) for a in anns)))
-
-    # # TODO: avoid O(N^2)
-    # for t1 in textbounds:
-    #     for t2 in textbounds:
-    #         if t1 is t2 or t1.removed or t2.removed or not t1.overlaps(t2):
-    #             continue
-    #         t, o = pick_removed(t1, t2)
-    #         try:
-    #             print(u'Eliminate {} due to overlap with {}'.format(t, o),
-    #                   file=sys.stderr)
-    #         except UnicodeEncodeError:
-    #             print(u'Eliminate %s due to overlap with %s'.format(t.id, o.id),
-    #                   file=sys.stderr)
-    #         t.removed = True
+    # Resolve other annotations by length
+    # TODO: avoid O(N^2)
+    for t1 in textbounds:
+        if t1.removed:
+            continue
+        for t2 in textbounds:
+            if t1 is t2 or t1.removed or t2.removed or not t1.overlaps(t2):
+                continue
+            t, o = pick_removed(t1, t2)
+            try:
+                print(u'Remove {} due to overlap with {}'.format(t, o),
+                      file=sys.stderr)
+            except UnicodeEncodeError:
+                print(u'Remove %s due to overlap with %s'.format(t.id, o.id),
+                      file=sys.stderr)
+            t.removed = True
 
     removed_count = 0
     for a in annotations:
