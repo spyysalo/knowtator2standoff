@@ -14,6 +14,8 @@ from logging import warn
 
 DOCDIR = 'craft-2.0/articles/txt/'    # TODO: CLI argument
 
+MAX_SPAN = 150    # TODO: CLI argument
+
 # Mapping from CRAFT to standoff types
 type_map = {
     'Entrez Gene sequence': 'EntrezGene',
@@ -91,6 +93,12 @@ class Annotation(object):
                         doc_text[start:end].encode('utf-8'), start, end))
             fixed_spans.append((start, end))
         spans = fixed_spans
+
+        # sanity check
+        if spans[-1][1] - spans[0][0] > MAX_SPAN:
+            raise FormatError('span length over MAX_SPAN: {} ({})'.format(
+                text.encode('utf-8'), spans))
+
         mention_id = findonly(e, 'mention').get('id')
         return cls(spans, texts, mention_id)
 
