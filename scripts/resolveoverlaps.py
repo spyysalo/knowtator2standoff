@@ -84,11 +84,30 @@ def pick_removed(t1, t2):
     else:
         return t2, t1
 
+
 # Pairs of annotation types where the former is preferred over the
 # latter so that overlaps between annotations having the pair of types
-# are resolved by removing the one with the latter type.
+# are resolved by removing the one with the latter type. Some typical
+# cases resolved by these preferences:
+#
+# - SO vs. independent_continuant: mutant, wild-type, WT, transgenic
+# - CL vs. GO: cell, cells, cellular
+# - CHEBI vs. SO: mRNA, amino acid, nucleotide, cysteine, proline
+# - GO vs. SO: chromosome, chromosomal, transmembrane
+# - GGP vs. CHEBI: insulin, Gh, cytochrome c, myoglobin
+# - GGP vs. GO: collagen, PCNA, CII, FAS
+# - SO vs. GGP: rRNA, ribosomal RNA
+# - GO vs. CHEBI: haemoglobin
 _preferred_types = [
     ('SO', 'independent_continuant'),
+    ('CL', 'GO'),
+    ('CHEBI', 'SO'),
+    ('GO', 'SO'),
+    ('GGP', 'CHEBI'),
+    ('GGP', 'GO'),
+    ('SO', 'GGP'),
+    ('GO', 'CHEBI'),
+    ('SO', 'Taxon'),
 ]
 
 
@@ -105,6 +124,7 @@ def resolve_identical_spans(a1, a2):
             print(u'Remove {} due to overlap with {}'.format(a2, a1),
                   file=sys.stderr)
             return
+    print(u'Unresolved: {} vs {}'.format(a2, a1), file=sys.stderr)
 
 
 def resolve_overlapped(source, out=None, encoding=DEFAULT_ENCODING):
