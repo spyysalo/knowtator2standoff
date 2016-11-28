@@ -156,10 +156,12 @@ def resolve_overlapped(source, out=None, encoding=DEFAULT_ENCODING):
 
     # Resolve other annotations by length
     # TODO: avoid O(N^2)
-    for t1 in textbounds:
+    tb_by_length = sorted(textbounds, key=lambda t: t.end-t.start,
+                          reverse=True)
+    for t1 in tb_by_length:
         if t1.removed:
             continue
-        for t2 in textbounds:
+        for t2 in tb_by_length:
             if t1 is t2 or t1.removed or t2.removed or not t1.overlaps(t2):
                 continue
             t, o = pick_removed(t1, t2)
